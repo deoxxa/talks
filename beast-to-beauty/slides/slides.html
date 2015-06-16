@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Slides</title>
+    <link rel="stylesheet" href="pygments.css">
+    <style>
+body {
+  max-width: 1100px;
+  margin: auto;
+  font-family: Verdana;
+  font-size: 2em;
+}
+
+div.content {
+  margin: 0px 2em;
+}
+
+ul {
+  margin: 0px 2em;
+}
+
+ul > li {
+  margin-bottom: 25px;
+}
+    </style>
+  </head>
+  <body>
+    <script>
+var SlideView = function SlideView(slide) {
+  var div = this.el = document.createElement("div");
+
+  var title = document.createElement("h1");
+  title.innerHTML = slide.title;
+  div.appendChild(title);
+
+  if (slide.points) {
+    var ul = document.createElement("ul");
+    div.appendChild(ul);
+
+    slide.points.forEach(function(e) {
+      var li = document.createElement("li");
+      li.innerHTML = e;
+      ul.appendChild(li);
+    });
+  }
+
+  if (slide.html) {
+    var content = document.createElement("div");
+    content.className = "content";
+    content.innerHTML = slide.html;
+    div.appendChild(content);
+  }
+};
+
+window.addEventListener("DOMContentLoaded", function() {
+  var slidesJSON = document.getElementById("slide-json").innerHTML,
+      slides = JSON.parse(slidesJSON);
+
+  var currentIndex = 0,
+      currentSlide = null;
+
+  var slideViews = slides.map(function(slide) {
+    return new SlideView(slide);
+  });
+
+  var body = document.body;
+
+  var switchSlide = function switchSlide(n) {
+    if (currentSlide) {
+      body.removeChild(currentSlide.el);
+    }
+
+    currentIndex += n;
+
+    while (currentIndex < 0) {
+      currentIndex += slideViews.length;
+    }
+    while (currentIndex > slideViews.length) {
+      currentIndex -= slideViews.length;
+    }
+
+    currentSlide = slideViews[currentIndex % slideViews.length];
+
+    body.appendChild(currentSlide.el);
+  };
+
+  switchSlide(0);
+
+  window.addEventListener("keydown", function(e) {
+    var key = e.keyIdentifier.toLowerCase();
+
+    if (key === "left") {
+      switchSlide(-1);
+    }
+
+    if (key === "right") {
+      switchSlide(1);
+    }
+
+    if (key === "u+0020") {
+      currentSlide.showAnotherPoint();
+    }
+  });
+});
+    </script>
+    <script type="application/json" id="slide-json">
+[
+  {
+    "title": "Conrad Pankoff (@deoxxa)",
+    "points": [
+      "Work at: Moving Data",
+      "Work as: JavaScript developer",
+      "Work on: Machine to machine communication"
+    ]
+  },
+  {
+    "title": "Beast to Beauty",
+    "html": "<h4>An Exercise in Reverse Engineering with Node.JS</h4>"
+  },
+  {
+    "title": "Binary Data",
+    "points": [
+      "What is binary data?",
+      "No formal definition",
+      "�\u0002��\u0014]��\u00018\u001e0�'��"
+    ]
+  },
+  {
+    "title": "Binary Data in JavaScript",
+    "points": [
+      "Everything is strings",
+      "UTF-8",
+      "Uncommon to use binary data in browsers"
+    ]
+  },
+  {
+    "title": "Binary Data in Node.JS",
+    "points": [
+      "Buffer",
+      "Not a string",
+      "Progress since the \"old days\""
+    ]
+  },
+  {
+    "title": "Buffer",
+    "points": [
+      "Everybody's first exposure to binary data in node",
+      "Very common in node's I/O systems",
+      "Everything is bytes"
+    ]
+  },
+  {
+    "title": "Buffer.toString",
+    "points": [
+      "UTF-8, ASCII, UCS-2",
+      "hex",
+      "hex is cool for exploring data"
+    ]
+  },
+  {
+    "title": "Buffer.read[U]Int(8|16|32)",
+    "points": [
+      "JavaScript's numbers (aka floats)",
+      "Everything else's numbers (int8, uint8, int16le, int16be, etc)",
+      "Most binary data represents numbers"
+    ]
+  },
+  {
+    "title": "Example: static 1 (vanilla)",
+    "points": [
+      "[★★★★★] Brevity",
+      "[★★★★★] Performance",
+      "[★★★★★] Simplicity"
+    ],
+    "html": "<div class=\"highlight\"><pre><span class=\"err\">#</span><span class=\"o\">!</span><span class=\"err\">/usr/bin/env node</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">rawPacket</span> <span class=\"o\">=</span> <span class=\"nx\">Buffer</span><span class=\"p\">([</span>\n  <span class=\"mh\">0x05</span><span class=\"p\">,</span> <span class=\"mh\">0x68</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span>\n<span class=\"p\">]);</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">parse</span> <span class=\"o\">=</span> <span class=\"kd\">function</span> <span class=\"nx\">parse</span><span class=\"p\">(</span><span class=\"nx\">rawPacket</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n  <span class=\"kd\">var</span> <span class=\"nx\">messageLength</span> <span class=\"o\">=</span> <span class=\"nx\">rawPacket</span><span class=\"p\">.</span><span class=\"nx\">readUInt8</span><span class=\"p\">(</span><span class=\"mi\">0</span><span class=\"p\">),</span>\n      <span class=\"nx\">messageContent</span> <span class=\"o\">=</span> <span class=\"nx\">rawPacket</span><span class=\"p\">.</span><span class=\"nx\">toString</span><span class=\"p\">(</span><span class=\"s2\">&quot;ascii&quot;</span><span class=\"p\">,</span> <span class=\"mi\">1</span><span class=\"p\">,</span> <span class=\"mi\">1</span> <span class=\"o\">+</span> <span class=\"nx\">messageLength</span><span class=\"p\">);</span>\n\n  <span class=\"k\">return</span> <span class=\"nx\">messageContent</span><span class=\"p\">;</span>\n<span class=\"p\">};</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">message</span> <span class=\"o\">=</span> <span class=\"nx\">parse</span><span class=\"p\">(</span><span class=\"nx\">rawPacket</span><span class=\"p\">);</span>\n\n<span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"nx\">message</span><span class=\"p\">);</span>\n</pre></div>"
+  },
+  {
+    "title": "Example: static 2 (vanilla)",
+    "points": [
+      "[★★★★★] Brevity",
+      "[★★★★★] Performance",
+      "[★★★★☆] Simplicity"
+    ],
+    "html": "<div class=\"highlight\"><pre><span class=\"err\">#</span><span class=\"o\">!</span><span class=\"err\">/usr/bin/env node</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">rawPacket</span> <span class=\"o\">=</span> <span class=\"nx\">Buffer</span><span class=\"p\">([</span>\n  <span class=\"mh\">0x02</span><span class=\"p\">,</span> <span class=\"mh\">0x05</span><span class=\"p\">,</span> <span class=\"mh\">0x68</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x11</span><span class=\"p\">,</span>\n  <span class=\"mh\">0x68</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x77</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x61</span><span class=\"p\">,</span> <span class=\"mh\">0x72</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span>\n  <span class=\"mh\">0x79</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x75</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x74</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x64</span><span class=\"p\">,</span> <span class=\"mh\">0x61</span><span class=\"p\">,</span>\n  <span class=\"mh\">0x79</span><span class=\"p\">,</span>\n<span class=\"p\">]);</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">parse</span> <span class=\"o\">=</span> <span class=\"kd\">function</span> <span class=\"nx\">parse</span><span class=\"p\">(</span><span class=\"nx\">rawPacket</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n  <span class=\"kd\">var</span> <span class=\"nx\">messageCount</span> <span class=\"o\">=</span> <span class=\"nx\">rawPacket</span><span class=\"p\">.</span><span class=\"nx\">readUInt8</span><span class=\"p\">(</span><span class=\"mi\">0</span><span class=\"p\">);</span>\n\n  <span class=\"kd\">var</span> <span class=\"nx\">messages</span> <span class=\"o\">=</span> <span class=\"p\">[];</span>\n\n  <span class=\"kd\">var</span> <span class=\"nx\">offset</span> <span class=\"o\">=</span> <span class=\"mi\">1</span><span class=\"p\">;</span>\n  <span class=\"k\">for</span> <span class=\"p\">(</span><span class=\"kd\">var</span> <span class=\"nx\">i</span><span class=\"o\">=</span><span class=\"mi\">0</span><span class=\"p\">;</span><span class=\"nx\">i</span><span class=\"o\">&lt;</span><span class=\"nx\">messageCount</span><span class=\"p\">;</span><span class=\"o\">++</span><span class=\"nx\">i</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n    <span class=\"kd\">var</span> <span class=\"nx\">messageLength</span> <span class=\"o\">=</span> <span class=\"nx\">rawPacket</span><span class=\"p\">.</span><span class=\"nx\">readUInt8</span><span class=\"p\">(</span><span class=\"nx\">offset</span><span class=\"o\">++</span><span class=\"p\">),</span>\n        <span class=\"nx\">messageContent</span> <span class=\"o\">=</span> <span class=\"nx\">rawPacket</span><span class=\"p\">.</span><span class=\"nx\">toString</span><span class=\"p\">(</span><span class=\"s2\">&quot;ascii&quot;</span><span class=\"p\">,</span> <span class=\"nx\">offset</span><span class=\"p\">,</span> <span class=\"nx\">offset</span> <span class=\"o\">+=</span> <span class=\"nx\">messageLength</span><span class=\"p\">);</span>\n\n    <span class=\"nx\">messages</span><span class=\"p\">.</span><span class=\"nx\">push</span><span class=\"p\">(</span><span class=\"nx\">messageContent</span><span class=\"p\">);</span>\n  <span class=\"p\">}</span>\n\n  <span class=\"k\">return</span> <span class=\"nx\">messages</span><span class=\"p\">;</span>\n<span class=\"p\">};</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">packet</span> <span class=\"o\">=</span> <span class=\"nx\">parse</span><span class=\"p\">(</span><span class=\"nx\">rawPacket</span><span class=\"p\">);</span>\n\n<span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"nx\">JSON</span><span class=\"p\">.</span><span class=\"nx\">stringify</span><span class=\"p\">(</span><span class=\"nx\">packet</span><span class=\"p\">,</span> <span class=\"kc\">null</span><span class=\"p\">,</span> <span class=\"mi\">2</span><span class=\"p\">));</span>\n</pre></div>"
+  },
+  {
+    "title": "Example: stream (vanilla)",
+    "points": [
+      "[★★☆☆☆] Brevity",
+      "[★★★★☆] Performance",
+      "[★☆☆☆☆] Simplicity"
+    ],
+    "html": "<div class=\"highlight\"><pre><span class=\"err\">#</span><span class=\"o\">!</span><span class=\"err\">/usr/bin/env node</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">Stream</span> <span class=\"o\">=</span> <span class=\"nx\">require</span><span class=\"p\">(</span><span class=\"s2\">&quot;stream&quot;</span><span class=\"p\">);</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">stream</span> <span class=\"o\">=</span> <span class=\"k\">new</span> <span class=\"nx\">Stream</span><span class=\"p\">.</span><span class=\"nx\">PassThrough</span><span class=\"p\">();</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">messageLength</span> <span class=\"o\">=</span> <span class=\"kc\">null</span><span class=\"p\">,</span>\n    <span class=\"nx\">messageChunks</span> <span class=\"o\">=</span> <span class=\"p\">[];</span>\n\n<span class=\"nx\">stream</span><span class=\"p\">.</span><span class=\"nx\">on</span><span class=\"p\">(</span><span class=\"s2\">&quot;readable&quot;</span><span class=\"p\">,</span> <span class=\"kd\">function</span><span class=\"p\">()</span> <span class=\"p\">{</span>\n  <span class=\"kd\">var</span> <span class=\"nx\">chunk</span><span class=\"p\">;</span>\n\n  <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;- READABLE&quot;</span><span class=\"p\">);</span>\n\n  <span class=\"k\">while</span> <span class=\"p\">(</span><span class=\"kc\">true</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n    <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;  - READ LOOP&quot;</span><span class=\"p\">);</span>\n\n    <span class=\"k\">if</span> <span class=\"p\">(</span><span class=\"nx\">messageLength</span> <span class=\"o\">===</span> <span class=\"kc\">null</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n      <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;    - trying to read message length&quot;</span><span class=\"p\">);</span>\n      <span class=\"nx\">chunk</span> <span class=\"o\">=</span> <span class=\"nx\">stream</span><span class=\"p\">.</span><span class=\"nx\">read</span><span class=\"p\">(</span><span class=\"mi\">1</span><span class=\"p\">);</span>\n\n      <span class=\"k\">if</span> <span class=\"p\">(</span><span class=\"nx\">chunk</span> <span class=\"o\">===</span> <span class=\"kc\">null</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n        <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;      - ** couldn&#39;t get message length - that&#39;s ok, we&#39;ll wait **&quot;</span><span class=\"p\">);</span>\n        <span class=\"k\">return</span><span class=\"p\">;</span>\n      <span class=\"p\">}</span>\n\n      <span class=\"nx\">messageLength</span> <span class=\"o\">=</span> <span class=\"nx\">chunk</span><span class=\"p\">.</span><span class=\"nx\">readUInt8</span><span class=\"p\">(</span><span class=\"mi\">0</span><span class=\"p\">);</span>\n\n      <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;      - message length is: &quot;</span> <span class=\"o\">+</span> <span class=\"nx\">messageLength</span><span class=\"p\">);</span>\n    <span class=\"p\">}</span>\n\n    <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;    - going to try to read &quot;</span> <span class=\"o\">+</span> <span class=\"nx\">messageLength</span> <span class=\"o\">+</span> <span class=\"s2\">&quot; bytes of data&quot;</span><span class=\"p\">);</span>\n    <span class=\"kd\">var</span> <span class=\"nx\">chunk</span> <span class=\"o\">=</span> <span class=\"nx\">stream</span><span class=\"p\">.</span><span class=\"nx\">read</span><span class=\"p\">(</span><span class=\"nx\">messageLength</span><span class=\"p\">);</span>\n\n    <span class=\"k\">if</span> <span class=\"p\">(</span><span class=\"nx\">chunk</span> <span class=\"o\">===</span> <span class=\"kc\">null</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n      <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;      - ** couldn&#39;t read any data - that&#39;s ok, we&#39;ll wait **&quot;</span><span class=\"p\">);</span>\n      <span class=\"k\">return</span><span class=\"p\">;</span>\n    <span class=\"p\">}</span>\n\n    <span class=\"nx\">messageChunks</span><span class=\"p\">.</span><span class=\"nx\">push</span><span class=\"p\">(</span><span class=\"nx\">chunk</span><span class=\"p\">);</span>\n    <span class=\"nx\">messageLength</span> <span class=\"o\">-=</span> <span class=\"nx\">chunk</span><span class=\"p\">.</span><span class=\"nx\">length</span><span class=\"p\">;</span>\n\n    <span class=\"k\">if</span> <span class=\"p\">(</span><span class=\"nx\">messageLength</span> <span class=\"o\">&gt;</span> <span class=\"mi\">0</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n      <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;      - ** still need &quot;</span> <span class=\"o\">+</span> <span class=\"nx\">messageLength</span> <span class=\"o\">+</span> <span class=\"s2\">&quot; bytes of data - that&#39;s ok, we&#39;ll wait **&quot;</span><span class=\"p\">);</span>\n      <span class=\"k\">return</span><span class=\"p\">;</span>\n    <span class=\"p\">}</span>\n\n    <span class=\"kd\">var</span> <span class=\"nx\">message</span> <span class=\"o\">=</span> <span class=\"nx\">Buffer</span><span class=\"p\">.</span><span class=\"nx\">concat</span><span class=\"p\">(</span><span class=\"nx\">messageChunks</span><span class=\"p\">).</span><span class=\"nx\">toString</span><span class=\"p\">();</span>\n\n    <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"s2\">&quot;      - got our whole message: &quot;</span> <span class=\"o\">+</span> <span class=\"nx\">JSON</span><span class=\"p\">.</span><span class=\"nx\">stringify</span><span class=\"p\">(</span><span class=\"nx\">message</span><span class=\"p\">));</span>\n\n    <span class=\"nx\">messageLength</span> <span class=\"o\">=</span> <span class=\"kc\">null</span><span class=\"p\">;</span>\n    <span class=\"nx\">messageChunks</span> <span class=\"o\">=</span> <span class=\"p\">[];</span>\n  <span class=\"p\">}</span>\n<span class=\"p\">});</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">chunks</span> <span class=\"o\">=</span> <span class=\"p\">[</span>\n  <span class=\"nx\">Buffer</span><span class=\"p\">([</span><span class=\"mh\">0x05</span><span class=\"p\">,</span> <span class=\"mh\">0x68</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x11</span><span class=\"p\">,</span> <span class=\"mh\">0x68</span><span class=\"p\">]),</span>\n  <span class=\"nx\">Buffer</span><span class=\"p\">([</span><span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x77</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x61</span><span class=\"p\">,</span> <span class=\"mh\">0x72</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x79</span><span class=\"p\">]),</span>\n  <span class=\"nx\">Buffer</span><span class=\"p\">([</span><span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x75</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x74</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x64</span><span class=\"p\">,</span> <span class=\"mh\">0x61</span><span class=\"p\">,</span> <span class=\"mh\">0x79</span><span class=\"p\">]),</span>\n<span class=\"p\">];</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">interval</span> <span class=\"o\">=</span> <span class=\"nx\">setInterval</span><span class=\"p\">(</span><span class=\"kd\">function</span><span class=\"p\">()</span> <span class=\"p\">{</span>\n  <span class=\"kd\">var</span> <span class=\"nx\">chunk</span> <span class=\"o\">=</span> <span class=\"nx\">chunks</span><span class=\"p\">.</span><span class=\"nx\">shift</span><span class=\"p\">();</span>\n\n  <span class=\"k\">if</span> <span class=\"p\">(</span><span class=\"nx\">chunk</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n    <span class=\"nx\">stream</span><span class=\"p\">.</span><span class=\"nx\">write</span><span class=\"p\">(</span><span class=\"nx\">chunk</span><span class=\"p\">);</span>\n  <span class=\"p\">}</span> <span class=\"k\">else</span> <span class=\"p\">{</span>\n    <span class=\"nx\">clearInterval</span><span class=\"p\">(</span><span class=\"nx\">interval</span><span class=\"p\">);</span>\n\n    <span class=\"nx\">stream</span><span class=\"p\">.</span><span class=\"nx\">end</span><span class=\"p\">();</span>\n  <span class=\"p\">}</span>\n<span class=\"p\">},</span> <span class=\"mi\">1000</span><span class=\"p\">);</span>\n</pre></div>"
+  },
+  {
+    "title": "Dissolve",
+    "points": [
+      "√ Open Source",
+      "√ Simple",
+      "√ Hackable",
+      "√ Streaming"
+    ]
+  },
+  {
+    "title": "Example: static 1 (dissolve)",
+    "points": [
+      "[★★★★★] Brevity",
+      "[★★★★☆] Performance",
+      "[★★★★★] Simplicity"
+    ],
+    "html": "<div class=\"highlight\"><pre><span class=\"err\">#</span><span class=\"o\">!</span><span class=\"err\">/usr/bin/env node</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">Dissolve</span> <span class=\"o\">=</span> <span class=\"nx\">require</span><span class=\"p\">(</span><span class=\"s2\">&quot;dissolve&quot;</span><span class=\"p\">);</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">rawPacket</span> <span class=\"o\">=</span> <span class=\"nx\">Buffer</span><span class=\"p\">([</span>\n  <span class=\"mh\">0x05</span><span class=\"p\">,</span> <span class=\"mh\">0x68</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span>\n<span class=\"p\">]);</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">parser</span> <span class=\"o\">=</span> <span class=\"nx\">Dissolve</span><span class=\"p\">().</span><span class=\"nx\">uint8</span><span class=\"p\">(</span><span class=\"s2\">&quot;length&quot;</span><span class=\"p\">).</span><span class=\"nx\">string</span><span class=\"p\">(</span><span class=\"s2\">&quot;message&quot;</span><span class=\"p\">,</span> <span class=\"s2\">&quot;length&quot;</span><span class=\"p\">).</span><span class=\"nx\">tap</span><span class=\"p\">(</span><span class=\"kd\">function</span><span class=\"p\">()</span> <span class=\"p\">{</span>\n  <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"k\">this</span><span class=\"p\">.</span><span class=\"nx\">vars</span><span class=\"p\">.</span><span class=\"nx\">message</span><span class=\"p\">);</span>\n<span class=\"p\">});</span>\n\n<span class=\"nx\">parser</span><span class=\"p\">.</span><span class=\"nx\">end</span><span class=\"p\">(</span><span class=\"nx\">rawPacket</span><span class=\"p\">);</span>\n</pre></div>"
+  },
+  {
+    "title": "Example: static 2 (dissolve)",
+    "points": [
+      "[★★★★★] Brevity",
+      "[★★★☆☆] Performance",
+      "[★★★★☆] Simplicity"
+    ],
+    "html": "<div class=\"highlight\"><pre><span class=\"err\">#</span><span class=\"o\">!</span><span class=\"err\">/usr/bin/env node</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">Dissolve</span> <span class=\"o\">=</span> <span class=\"nx\">require</span><span class=\"p\">(</span><span class=\"s2\">&quot;dissolve&quot;</span><span class=\"p\">);</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">rawPacket</span> <span class=\"o\">=</span> <span class=\"nx\">Buffer</span><span class=\"p\">([</span>\n  <span class=\"mh\">0x02</span><span class=\"p\">,</span> <span class=\"mh\">0x05</span><span class=\"p\">,</span> <span class=\"mh\">0x68</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x11</span><span class=\"p\">,</span>\n  <span class=\"mh\">0x68</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x77</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x61</span><span class=\"p\">,</span> <span class=\"mh\">0x72</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span>\n  <span class=\"mh\">0x79</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x75</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x74</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x64</span><span class=\"p\">,</span> <span class=\"mh\">0x61</span><span class=\"p\">,</span>\n  <span class=\"mh\">0x79</span><span class=\"p\">,</span>\n<span class=\"p\">]);</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">parser</span> <span class=\"o\">=</span> <span class=\"nx\">Dissolve</span><span class=\"p\">().</span><span class=\"nx\">uint8</span><span class=\"p\">(</span><span class=\"s2\">&quot;count&quot;</span><span class=\"p\">).</span><span class=\"nx\">tap</span><span class=\"p\">(</span><span class=\"kd\">function</span><span class=\"p\">()</span> <span class=\"p\">{</span>\n  <span class=\"kd\">var</span> <span class=\"nx\">remaining</span> <span class=\"o\">=</span> <span class=\"k\">this</span><span class=\"p\">.</span><span class=\"nx\">vars</span><span class=\"p\">.</span><span class=\"nx\">count</span><span class=\"p\">;</span>\n\n  <span class=\"k\">this</span><span class=\"p\">.</span><span class=\"nx\">loop</span><span class=\"p\">(</span><span class=\"s2\">&quot;messages&quot;</span><span class=\"p\">,</span> <span class=\"kd\">function</span><span class=\"p\">(</span><span class=\"nx\">done</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n    <span class=\"k\">this</span><span class=\"p\">.</span><span class=\"nx\">uint8</span><span class=\"p\">(</span><span class=\"s2\">&quot;length&quot;</span><span class=\"p\">).</span><span class=\"nx\">string</span><span class=\"p\">(</span><span class=\"s2\">&quot;message&quot;</span><span class=\"p\">,</span> <span class=\"s2\">&quot;length&quot;</span><span class=\"p\">).</span><span class=\"nx\">tap</span><span class=\"p\">(</span><span class=\"kd\">function</span><span class=\"p\">()</span> <span class=\"p\">{</span>\n      <span class=\"nx\">remaining</span><span class=\"o\">--</span><span class=\"p\">;</span>\n\n      <span class=\"k\">if</span> <span class=\"p\">(</span><span class=\"o\">!</span><span class=\"nx\">remaining</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n        <span class=\"k\">return</span> <span class=\"nx\">done</span><span class=\"p\">();</span>\n      <span class=\"p\">}</span>\n    <span class=\"p\">});</span>\n  <span class=\"p\">}).</span><span class=\"nx\">tap</span><span class=\"p\">(</span><span class=\"kd\">function</span><span class=\"p\">()</span> <span class=\"p\">{</span>\n    <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"nx\">JSON</span><span class=\"p\">.</span><span class=\"nx\">stringify</span><span class=\"p\">(</span><span class=\"k\">this</span><span class=\"p\">.</span><span class=\"nx\">vars</span><span class=\"p\">,</span> <span class=\"kc\">null</span><span class=\"p\">,</span> <span class=\"mi\">2</span><span class=\"p\">));</span>\n  <span class=\"p\">});</span>\n<span class=\"p\">});</span>\n\n<span class=\"nx\">parser</span><span class=\"p\">.</span><span class=\"nx\">end</span><span class=\"p\">(</span><span class=\"nx\">rawPacket</span><span class=\"p\">);</span>\n</pre></div>"
+  },
+  {
+    "title": "Example: stream (dissolve)",
+    "points": [
+      "[★★★★★] Brevity",
+      "[★★★☆☆] Performance",
+      "[★★★★★] Simplicity"
+    ],
+    "html": "<div class=\"highlight\"><pre><span class=\"err\">#</span><span class=\"o\">!</span><span class=\"err\">/usr/bin/env node</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">Dissolve</span> <span class=\"o\">=</span> <span class=\"nx\">require</span><span class=\"p\">(</span><span class=\"s2\">&quot;dissolve&quot;</span><span class=\"p\">);</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">parser</span> <span class=\"o\">=</span> <span class=\"nx\">Dissolve</span><span class=\"p\">().</span><span class=\"nx\">loop</span><span class=\"p\">(</span><span class=\"kd\">function</span><span class=\"p\">(</span><span class=\"nx\">done</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n  <span class=\"k\">this</span><span class=\"p\">.</span><span class=\"nx\">uint8</span><span class=\"p\">(</span><span class=\"s2\">&quot;length&quot;</span><span class=\"p\">).</span><span class=\"nx\">string</span><span class=\"p\">(</span><span class=\"s2\">&quot;message&quot;</span><span class=\"p\">,</span> <span class=\"s2\">&quot;length&quot;</span><span class=\"p\">).</span><span class=\"nx\">tap</span><span class=\"p\">(</span><span class=\"kd\">function</span><span class=\"p\">()</span> <span class=\"p\">{</span>\n    <span class=\"nx\">console</span><span class=\"p\">.</span><span class=\"nx\">log</span><span class=\"p\">(</span><span class=\"nx\">JSON</span><span class=\"p\">.</span><span class=\"nx\">stringify</span><span class=\"p\">(</span><span class=\"k\">this</span><span class=\"p\">.</span><span class=\"nx\">vars</span><span class=\"p\">.</span><span class=\"nx\">message</span><span class=\"p\">));</span>\n  <span class=\"p\">});</span>\n<span class=\"p\">});</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">chunks</span> <span class=\"o\">=</span> <span class=\"p\">[</span>\n  <span class=\"nx\">Buffer</span><span class=\"p\">([</span><span class=\"mh\">0x05</span><span class=\"p\">,</span> <span class=\"mh\">0x68</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6c</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x11</span><span class=\"p\">,</span> <span class=\"mh\">0x68</span><span class=\"p\">]),</span>\n  <span class=\"nx\">Buffer</span><span class=\"p\">([</span><span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x77</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x61</span><span class=\"p\">,</span> <span class=\"mh\">0x72</span><span class=\"p\">,</span> <span class=\"mh\">0x65</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x79</span><span class=\"p\">]),</span>\n  <span class=\"nx\">Buffer</span><span class=\"p\">([</span><span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x75</span><span class=\"p\">,</span> <span class=\"mh\">0x20</span><span class=\"p\">,</span> <span class=\"mh\">0x74</span><span class=\"p\">,</span> <span class=\"mh\">0x6f</span><span class=\"p\">,</span> <span class=\"mh\">0x64</span><span class=\"p\">,</span> <span class=\"mh\">0x61</span><span class=\"p\">,</span> <span class=\"mh\">0x79</span><span class=\"p\">]),</span>\n<span class=\"p\">];</span>\n\n<span class=\"kd\">var</span> <span class=\"nx\">interval</span> <span class=\"o\">=</span> <span class=\"nx\">setInterval</span><span class=\"p\">(</span><span class=\"kd\">function</span><span class=\"p\">()</span> <span class=\"p\">{</span>\n  <span class=\"kd\">var</span> <span class=\"nx\">chunk</span> <span class=\"o\">=</span> <span class=\"nx\">chunks</span><span class=\"p\">.</span><span class=\"nx\">shift</span><span class=\"p\">();</span>\n\n  <span class=\"k\">if</span> <span class=\"p\">(</span><span class=\"nx\">chunk</span><span class=\"p\">)</span> <span class=\"p\">{</span>\n    <span class=\"nx\">parser</span><span class=\"p\">.</span><span class=\"nx\">write</span><span class=\"p\">(</span><span class=\"nx\">chunk</span><span class=\"p\">);</span>\n  <span class=\"p\">}</span> <span class=\"k\">else</span> <span class=\"p\">{</span>\n    <span class=\"nx\">clearInterval</span><span class=\"p\">(</span><span class=\"nx\">interval</span><span class=\"p\">);</span>\n\n    <span class=\"nx\">parser</span><span class=\"p\">.</span><span class=\"nx\">end</span><span class=\"p\">();</span>\n  <span class=\"p\">}</span>\n<span class=\"p\">},</span> <span class=\"mi\">1000</span><span class=\"p\">);</span>\n</pre></div>"
+  }
+]
+    </script>
+  </body>
+</html>

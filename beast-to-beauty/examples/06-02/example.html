@@ -1,0 +1,29 @@
+<div class="highlight"><pre><span class="err">#</span><span class="o">!</span><span class="err">/usr/bin/env node</span>
+
+<span class="kd">var</span> <span class="nx">rawPacket</span> <span class="o">=</span> <span class="nx">Buffer</span><span class="p">([</span>
+  <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x11</span><span class="p">,</span>
+  <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x77</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x72</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span>
+  <span class="mh">0x79</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x75</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span>
+  <span class="mh">0x79</span><span class="p">,</span>
+<span class="p">]);</span>
+
+<span class="kd">var</span> <span class="nx">parse</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">parse</span><span class="p">(</span><span class="nx">rawPacket</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">messageCount</span> <span class="o">=</span> <span class="nx">rawPacket</span><span class="p">.</span><span class="nx">readUInt8</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+  <span class="kd">var</span> <span class="nx">messages</span> <span class="o">=</span> <span class="p">[];</span>
+
+  <span class="kd">var</span> <span class="nx">offset</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">messageCount</span><span class="p">;</span><span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">messageLength</span> <span class="o">=</span> <span class="nx">rawPacket</span><span class="p">.</span><span class="nx">readUInt8</span><span class="p">(</span><span class="nx">offset</span><span class="o">++</span><span class="p">),</span>
+        <span class="nx">messageContent</span> <span class="o">=</span> <span class="nx">rawPacket</span><span class="p">.</span><span class="nx">toString</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">,</span> <span class="nx">offset</span><span class="p">,</span> <span class="nx">offset</span> <span class="o">+=</span> <span class="nx">messageLength</span><span class="p">);</span>
+
+    <span class="nx">messages</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">messageContent</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">messages</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kd">var</span> <span class="nx">packet</span> <span class="o">=</span> <span class="nx">parse</span><span class="p">(</span><span class="nx">rawPacket</span><span class="p">);</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">packet</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+</pre></div>

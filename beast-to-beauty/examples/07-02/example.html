@@ -1,0 +1,74 @@
+<div class="highlight"><pre><span class="err">#</span><span class="o">!</span><span class="err">/usr/bin/env node</span>
+
+<span class="kd">var</span> <span class="nx">Stream</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;stream&quot;</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">stream</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Stream</span><span class="p">.</span><span class="nx">PassThrough</span><span class="p">();</span>
+
+<span class="kd">var</span> <span class="nx">messageLength</span> <span class="o">=</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="nx">messageChunks</span> <span class="o">=</span> <span class="p">[];</span>
+
+<span class="nx">stream</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;readable&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">chunk</span><span class="p">;</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;- READABLE&quot;</span><span class="p">);</span>
+
+  <span class="k">while</span> <span class="p">(</span><span class="kc">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;  - READ LOOP&quot;</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">messageLength</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;    - trying to read message length&quot;</span><span class="p">);</span>
+      <span class="nx">chunk</span> <span class="o">=</span> <span class="nx">stream</span><span class="p">.</span><span class="nx">read</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="nx">chunk</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;      - ** couldn&#39;t get message length - that&#39;s ok, we&#39;ll wait **&quot;</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+      <span class="p">}</span>
+
+      <span class="nx">messageLength</span> <span class="o">=</span> <span class="nx">chunk</span><span class="p">.</span><span class="nx">readUInt8</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;      - message length is: &quot;</span> <span class="o">+</span> <span class="nx">messageLength</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;    - going to try to read &quot;</span> <span class="o">+</span> <span class="nx">messageLength</span> <span class="o">+</span> <span class="s2">&quot; bytes of data&quot;</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">chunk</span> <span class="o">=</span> <span class="nx">stream</span><span class="p">.</span><span class="nx">read</span><span class="p">(</span><span class="nx">messageLength</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">chunk</span> <span class="o">===</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;      - ** couldn&#39;t read any data - that&#39;s ok, we&#39;ll wait **&quot;</span><span class="p">);</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="nx">messageChunks</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">chunk</span><span class="p">);</span>
+    <span class="nx">messageLength</span> <span class="o">-=</span> <span class="nx">chunk</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">messageLength</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;      - ** still need &quot;</span> <span class="o">+</span> <span class="nx">messageLength</span> <span class="o">+</span> <span class="s2">&quot; bytes of data - that&#39;s ok, we&#39;ll wait **&quot;</span><span class="p">);</span>
+      <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kd">var</span> <span class="nx">message</span> <span class="o">=</span> <span class="nx">Buffer</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">messageChunks</span><span class="p">).</span><span class="nx">toString</span><span class="p">();</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;      - got our whole message: &quot;</span> <span class="o">+</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">message</span><span class="p">));</span>
+
+    <span class="nx">messageLength</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="nx">messageChunks</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kd">var</span> <span class="nx">chunks</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="nx">Buffer</span><span class="p">([</span><span class="mh">0x05</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x11</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">]),</span>
+  <span class="nx">Buffer</span><span class="p">([</span><span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x77</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x72</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x79</span><span class="p">]),</span>
+  <span class="nx">Buffer</span><span class="p">([</span><span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x75</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x79</span><span class="p">]),</span>
+<span class="p">];</span>
+
+<span class="kd">var</span> <span class="nx">interval</span> <span class="o">=</span> <span class="nx">setInterval</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">chunk</span> <span class="o">=</span> <span class="nx">chunks</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">chunk</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">stream</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="nx">chunk</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">clearInterval</span><span class="p">(</span><span class="nx">interval</span><span class="p">);</span>
+
+    <span class="nx">stream</span><span class="p">.</span><span class="nx">end</span><span class="p">();</span>
+  <span class="p">}</span>
+<span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+</pre></div>

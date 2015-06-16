@@ -1,0 +1,48 @@
+[
+  {
+    "title": "Binary Data",
+    "points": [
+      "What is binary data?",
+      "No formal definition",
+      "�\u0002��\u0014]��\u00018\u001e0�'��"
+    ]
+  },
+  {
+    "title": "Binary Data in JavaScript",
+    "points": [
+      "Everything is strings",
+      "UTF-8",
+      "Browsers"
+    ]
+  },
+  {
+    "title": "Binary Data in Node.JS",
+    "points": [
+      "Buffer",
+      "Not a string",
+      "Progress"
+    ]
+  },
+  {
+    "title": "Buffer",
+    "points": [
+      "Gateway class",
+      "Ubiquitous",
+      "Everything is bytes"
+    ]
+  },
+  {
+    "title": "Buffer.toString()",
+    "points": [
+      "UTF-8, ASCII, UCS-2",
+      "hex"
+    ]
+  },
+  {
+    "title": "Buffer.readUInt8()",
+    "points": [
+      "JavaScript's numbers (aka floats)",
+      "Everything else's numbers (int8, uint8, int16le, int16be, etc)"
+    ]
+  }
+]

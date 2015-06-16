@@ -1,0 +1,29 @@
+<div class="highlight"><pre><span class="err">#</span><span class="o">!</span><span class="err">/usr/bin/env node</span>
+
+<span class="kd">var</span> <span class="nx">Dissolve</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;dissolve&quot;</span><span class="p">);</span>
+
+<span class="kd">var</span> <span class="nx">rawPacket</span> <span class="o">=</span> <span class="nx">Buffer</span><span class="p">([</span>
+  <span class="mh">0x02</span><span class="p">,</span> <span class="mh">0x05</span><span class="p">,</span> <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x6c</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x11</span><span class="p">,</span>
+  <span class="mh">0x68</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x77</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span> <span class="mh">0x72</span><span class="p">,</span> <span class="mh">0x65</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span>
+  <span class="mh">0x79</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x75</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x74</span><span class="p">,</span> <span class="mh">0x6f</span><span class="p">,</span> <span class="mh">0x64</span><span class="p">,</span> <span class="mh">0x61</span><span class="p">,</span>
+  <span class="mh">0x79</span><span class="p">,</span>
+<span class="p">]);</span>
+
+<span class="kd">var</span> <span class="nx">parser</span> <span class="o">=</span> <span class="nx">Dissolve</span><span class="p">().</span><span class="nx">uint8</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">).</span><span class="nx">tap</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">vars</span><span class="p">.</span><span class="nx">count</span><span class="p">;</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">loop</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">uint8</span><span class="p">(</span><span class="s2">&quot;length&quot;</span><span class="p">).</span><span class="nx">string</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="s2">&quot;length&quot;</span><span class="p">).</span><span class="nx">tap</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">remaining</span><span class="o">--</span><span class="p">;</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">remaining</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">done</span><span class="p">();</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+  <span class="p">}).</span><span class="nx">tap</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">vars</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+
+<span class="nx">parser</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="nx">rawPacket</span><span class="p">);</span>
+</pre></div>

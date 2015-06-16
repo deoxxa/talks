@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Slides</title>
+    <style>
+body {
+  max-width: 1000px;
+  margin: auto;
+  font-family: Verdana;
+  font-size: 2em;
+}
+
+ul {
+  margin: 0px 2em;
+}
+
+ul > li {
+  margin-bottom: 25px;
+}
+    </style>
+  </head>
+  <body>
+    <script>
+var SlideView = function SlideView(slide) {
+  var div = this.el = document.createElement("div");
+
+  var title = document.createElement("h1");
+  title.innerHTML = slide.title;
+  div.appendChild(title);
+
+  if (slide.html) {
+    var content = document.createElement("div");
+    content.innerHTML = slide.html;
+    div.appendChild(content);
+  }
+
+  if (slide.points) {
+    var ul = document.createElement("ul");
+    div.appendChild(ul);
+
+    slide.points.forEach(function(e) {
+      var li = document.createElement("li");
+      li.innerHTML = e;
+      ul.appendChild(li);
+    });
+  }
+};
+
+window.addEventListener("DOMContentLoaded", function() {
+  var slidesJSON = document.getElementById("slide-json").innerHTML,
+      slides = JSON.parse(slidesJSON);
+
+  var currentIndex = 0,
+      currentSlide = null;
+
+  var slideViews = slides.map(function(slide) {
+    return new SlideView(slide);
+  });
+
+  var body = document.body;
+
+  var switchSlide = function switchSlide(n) {
+    if (currentSlide) {
+      body.removeChild(currentSlide.el);
+    }
+
+    currentIndex += n;
+
+    while (currentIndex < 0) {
+      currentIndex += slideViews.length;
+    }
+    while (currentIndex > slideViews.length) {
+      currentIndex -= slideViews.length;
+    }
+
+    currentSlide = slideViews[currentIndex % slideViews.length];
+
+    body.appendChild(currentSlide.el);
+  };
+
+  switchSlide(0);
+
+  window.addEventListener("keydown", function(e) {
+    var key = e.keyIdentifier.toLowerCase();
+
+    if (key === "left") {
+      switchSlide(-1);
+    }
+
+    if (key === "right") {
+      switchSlide(1);
+    }
+
+    if (key === "u+0020") {
+      currentSlide.showAnotherPoint();
+    }
+  });
+});
+    </script>
+    <script type="application/json" id="slide-json">
+[
+  {
+    "title": "Conrad Pankoff (@deoxxa)",
+    "html": "<img src=\"moving-data.png\">",
+    "points": [
+      "Work at: Moving Data",
+      "Work as: JavaScript developer",
+      "Work on: Machine to machine communication"
+    ]
+  },
+  {
+    "title": "Binary Data",
+    "points": [
+      "What is binary data?",
+      "No formal definition",
+      "�\u0002��\u0014]��\u00018\u001e0�'��"
+    ]
+  },
+  {
+    "title": "Binary Data in JavaScript",
+    "points": [
+      "Everything is strings",
+      "UTF-8",
+      "Browsers"
+    ]
+  },
+  {
+    "title": "Binary Data in Node.JS",
+    "points": [
+      "Buffer",
+      "Not a string",
+      "Progress"
+    ]
+  },
+  {
+    "title": "Buffer",
+    "points": [
+      "Gateway class",
+      "Ubiquitous",
+      "Everything is bytes"
+    ]
+  },
+  {
+    "title": "Buffer.toString()",
+    "points": [
+      "UTF-8, ASCII, UCS-2",
+      "hex",
+      "Explore data in hex"
+    ]
+  },
+  {
+    "title": "Buffer.readUInt8()",
+    "points": [
+      "JavaScript's numbers (aka floats)",
+      "Everything else's numbers (int8, uint8, int16le, int16be, etc)"
+    ]
+  }
+]
+    </script>
+  </body>
+</html>

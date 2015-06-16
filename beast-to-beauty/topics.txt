@@ -1,0 +1,135 @@
+01-01 intro: Binary data
+01-02 intro: Binary data in JavaScript
+01-03 intro: Binary data in Node.JS
+02-01 words: Buffer
+02-02 code: Buffer
+03-01 words: Buffer.toString("hex")
+03-02 code: Buffer.toString("hex")
+04-01 words: Buffer.readUInt8 and friends
+04-02 code: Buffer.readUInt8 and friends
+05-01 words: parsing static buffers 1 (naiive)
+05-02 code: parsing static buffers 1 (naiive)
+06-01 words: parsing static buffers 2 (naiive)
+06-02 code: parsing static buffers 2 (naiive)
+07-01 words: parsing streams (naiive)
+07-02 code: parsing streams (naiive)
+08-01 intro: dissolve (mention node-binary)
+09-01 words: parsing static buffers 1 (dissolve)
+09-02 code: parsing static buffer 1 (dissolve)
+10-01 words: parsing static buffers 2 (dissolve)
+10-02 code: parsing static buffer 2 (dissolve)
+11-01 words: parsing streams (dissolve)
+11-02 code: parsing streams (dissolve)
+
+01-01
+
+"Binary data" only really has a meaning when the term is used to compare it to
+non-binary, or textual, data. Although there's no real formal definition of what
+it is or is not, most people will agree that if you can't view it properly in
+your text editor, it's binary.
+
+> ask if people in the audience have dealt with binary stuff before
+
+01-02
+
+JavaScript itself is really bad at binary data. All strings in JavaScript are
+supposed to be UTF-8, and although binary/UTF-8 data can co-exist peacefully,
+JavaScript grew up in kind of a rough neighbourhood so it's a bit defensive.
+
+If you present JavaScript with a string that doesn't have a valid UTF-8
+representation, JavaScript will do it's best to try to figure out what you mean.
+
+Javascript sucks at reading your mind though. So far.
+
+01-03
+
+Node.JS, being meant for networking thingies, helps us out a bit with handling
+binary stuff. Node.JS gives us the `Buffer` class, which represents a chunk of
+memory held outside of the constraints of JavaScript, freed from the requirement
+to conform to a rigid UTF-8 structure. Freedom for data!
+
+TRIVIA: In the old days, prior to 0.4, binary data was kept in strings, and it
+was... Interesting. There were, up until recently, still vestiges of this left
+over in the `crypto` module. Those days are now behind us though! Yay!
+
+02-01
+
+The `Buffer` class will have likely been your first foray into the arena of
+binary data in Node. It's used for nearly all I/O, unless you specifically ask
+for strings (and even then, the strings are just being converted from buffers
+anyway.)
+
+> ask if people have used it before
+
+The way that it works is that it provides a chunk of memory that's held outside
+the world of JavaScript, and a bunch of methods for interacting with it.
+
+`Buffer` looks like a normal array, for the most part. This is kind of because
+it is, at least in c-land. To the JavaScript developer, it looks and largely
+acts like an array of numbers, except that the numbers can only be integers, and
+must be between 0 and 255.
+
+Holding arbitrary data is all well and good, but that's not all that Buffer has
+up its sleeve.
+
+02-02
+
+[code](./02-02/example.js)
+
+03-01
+
+One of the things that the `Buffer` class can do is transform into a string!
+It's not as awesome as transforming into a robot, but it's almost as useful. You
+can tell it to encode itself as a string in a variety of encodings.
+
+All the usual suspects are available - UTF-8, ASCII, even UCS-2, for all you
+Java people in the room. Node gives us a couple of less common encodings
+however - most notably, hex. This comes in very handy when you want to take a
+quick look at some data, but it's all binary gibberish! A hex dump can sometimes
+let you see patterns that would otherwise be invisible. Hex-ray specs... Sorry.
+
+03-02
+
+[code](./03-02/example.js)
+
+04-01
+
+Another thing that `Buffer` will do for you is give you numbers! JavaScript only
+really knows about one type of number, the double-precision floating point
+number, but in c-land, where the buffer primarily lives, there are magical
+things called "integers". `Buffer` gives you some interfaces for working with
+integers.
+
+04-02
+
+[code](./04-02/example.js)
+
+05-01
+
+Okay! Time for the meat of the meal. We'll be starting out with a blob of trash
+and doing our darndest to turn it into gold.
+
+So here we have a buffer containing the following bytes:
+
+```javascript
+[0x05, 0x68, 0x65, 0x6c, 0x6c, 0x6f]
+```
+
+Already things are looking a little interesting. We can see a lot of bytes in
+the `0x60` to `0x70` area. This is a dead giveaway that there's some ASCII text
+going on there.
+
+The first byte, however, is all the way down in the single digits! It must mean
+something different.
+
+This is a common occurance in binary protocols - it's called a length-prefixed
+string. The first byte tells you how many bytes are following it, and thus
+allows you to read the rest of the bytes without caring what the content is.
+
+TRIVIA: this is in contrast to how most strings work (null-terminated strings)
+
+05-02
+
+[code](./05-02/example.js)
+
+06-01
