@@ -1,0 +1,217 @@
+Go and JavaScript
+Together at Last
+16:00 23 May 2015
+Tags: golang, javascript, otto
+
+Conrad Pankoff
+Binary Wizard, Macropod
+deoxxa@fknsrs.biz
+http://www.fknsrs.biz/
+@deoxxa
+
+* Slides
+
+[[http://10.10.0.16/go-and-javascript.slide]]
+
+* Conrad
+
+- Programming since 2008
+- Perl -> PHP -> C -> C++ -> JavaScript -> Go
+- Using Go for backend and system stuff now
+- Still a JavaScript fan, not ready to abandon JS
+
+* Macropod
+
+Things we make:
+
+- BugHerd (contextual feedback; point-and-click bug logging; [[http://macropod.com/bugherd][macropod.com/bugherd]])
+- Stack (kanban-style task manager; [[http://macropod.com/stack][macropod.com/stack]])
+
+Things we use:
+
+- Ruby and Go (backends)
+- JavaScript (frontends, backends)
+
+Plans we have:
+
+- Unify our backend infrastructure, standardise on Go
+
+* New API Concepts
+
+- *JSON-Schema*Everywhere*; enables automated introspection, reflection, and documentation
+- *Embrace*HTTP*; `If-Match` and `Etag` make our API more efficient and explicit
+- *Consistency*and*Isolation*; use database transactions to enforce isolation
+- *Fail*Loudly*; related to above, explicitly fail and tell the client when a request isn't servicable, perhaps due to a conflict
+- *Batched*Requests*; multiple actions in one database transaction - no partial failures
+- *Programmable*Requests*; building on the above, a JavaScript endpoint to do complex things in one transaction
+
+* Batch API Request
+
+  POST /v1/_batch HTTP/1.1
+  content-type: application/json
+
+  [
+    {
+      "id": "9e7fc40f-6f3f-4b70-a171-8219353aa382",
+      "method": "PUT",
+      "url": "/v1/pets/02da1a9e-4143-4cd2-9499-170c5c1d9907",
+      "json": {
+        "id": "02da1a9e-4143-4cd2-9499-170c5c1d9907",
+        "name": "fluffy"
+      }
+    },
+    {
+      "id": "49ff6f76-85b8-4c7b-bde4-a0ddb30669f9",
+      "method": "PUT",
+      "url": "/v1/toys/c3549e4c-c9a6-4aa9-9ab9-3b8464a88d2c",
+      "json": {
+        "id": "c3549e4c-c9a6-4aa9-9ab9-3b8464a88d2c",
+        "petId": "02da1a9e-4143-4cd2-9499-170c5c1d9907"
+      }
+    }
+  ]
+
+* Batch API Response
+
+  HTTP 200 OK
+  content-type: application/json
+
+  [
+    {
+      "id": "9e7fc40f-6f3f-4b70-a171-8219353aa382",
+      "code": 201,
+      "json": {
+        "id": "02da1a9e-4143-4cd2-9499-170c5c1d9907",
+        "version": "1f3c8860-5654-45d6-b40a-8b78f2d43e77",
+        "name": "fluffy"
+      }
+    },
+    {
+      "id": "49ff6f76-85b8-4c7b-bde4-a0ddb30669f9",
+      "code": 201,
+      "json": {
+        "id": "c3549e4c-c9a6-4aa9-9ab9-3b8464a88d2c",
+        "version": "2a706b76-f3d4-4c14-aa05-974b9c5619d3",
+        "petId": "02da1a9e-4143-4cd2-9499-170c5c1d9907"
+      }
+    }
+  ]
+
+* JavaScript API Request
+
+  POST /v1/_script
+  content-type: application/javascript
+
+  var petId = "02da1a9e-4143-4cd2-9499-170c5c1d9907";
+  var toyId = "c3549e4c-c9a6-4aa9-9ab9-3b8464a88d2c";
+
+  ({
+    pet: update("Pet", petId, {
+      name: "fluffy",
+    }),
+    toy: update("Toy", toyId, {
+      petId: petId,
+    }),
+  });
+
+`//`api`(annotated`like`github.com/facebook/flow)`
+`get(type:`string,`id:`uuid)`?object`
+`search(type:`string,`query:`object)`Array<object>`
+`update(type:`string,`id:`uuid,`data:`object,`version:`?uuid)`object`
+`delete(type:`string,`id:`uuid,`version:`uuid)`
+
+* JavaScript API Response
+
+  HTTP 200 OK
+  content-type: application/json
+
+  {
+    "pet": {
+      "id": "02da1a9e-4143-4cd2-9499-170c5c1d9907",
+      "version": "1f3c8860-5654-45d6-b40a-8b78f2d43e77",
+      "name": "fluffy"
+    },
+    "toy": {
+      "id": "c3549e4c-c9a6-4aa9-9ab9-3b8464a88d2c",
+      "version": "2a706b76-f3d4-4c14-aa05-974b9c5619d3",
+      "petId": "02da1a9e-4143-4cd2-9499-170c5c1d9907"
+    }
+  }
+
+* Advanced JavaScript API Request
+
+  POST /v1/_script
+  content-type: application/javascript
+
+  var pet = search("Pet", {name: "fluffy"});
+  if (pets.length !== 1) {
+    throw new Error("expected 1 pet; got " + pets.length);
+  }
+  var pet = pets[0];
+
+  // `version` is needed because this is an update
+  pet = update("Pet", pet.id, {
+    name: "fluffier",
+  }, pet.version);
+
+  ({pet: pet});
+
+* Advanced JavaScript API Response
+
+  HTTP 200 OK
+  content-type: application/json
+
+  {
+    "pet": {
+      "id": "02da1a9e-4143-4cd2-9499-170c5c1d9907",
+      "version": "3110408c-da1e-4072-b505-8f14b70faff2",
+      "name": "fluffier"
+    }
+  }
+
+* Otto JavaScript Interpreter
+
+[[https://github.com/robertkrimen/otto][github.com/robertkrimen/otto]]
+
+- Targets ES5
+- Reasonably complete
+- Not extremely fast, not extremely slow
+- Very clean interface to Go code
+
+* Hello, World!
+
+Import one package and you're ready to host JavaScript in Go.
+
+.play hello_world.go
+
+* Hello, Go!
+
+The value returned by the last expression in a `Run` invocation is returned to
+the Go program.
+
+.play hello_go.go
+
+* Hello, JavaScript!
+
+The `Set` function is used to put things into global scope in the interpreter
+instance.
+
+.play hello_javascript.go
+
+* Hello, Function!
+
+Functions are provided to the JavaScript instance via `Set` as well.
+
+.play hello_function.go
+
+* Hello, HTTP!
+
+This "hello, x" metaphor is wearing pretty thin...
+
+.play advanced.go
+
+* eval() as a Service
+
+`curl`--data`'1`+`1'`http://127.0.0.1:3000/`
+
+.code whatever.go
